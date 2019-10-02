@@ -2,7 +2,6 @@
 
 birds = [];
 const nBirds = 100;
-const nWhales = 0;
 
 var separationSlider, alignmentSlider, coherenceSlider;
 
@@ -20,22 +19,17 @@ function setup() {
     let randColor = random(0, 155);
     let x = random(0, width);
     let y = random(0, height);
-    let vInward = p5.Vector.sub(createVector(x, y, 0), 
-                                createVector(width/2, height/2, 0));
-    let vel = p5.Vector.cross(vInward, createVector(0, 0, 1));
-    vel.setMag(random(3, 5));
+    let vel = p5.Vector.cross( // cross with z axis to make everything spin at the beginning
+                p5.Vector.sub(
+                  createVector(x, y, 0),
+                  createVector(width/2, height/2, 0)
+                ),
+                createVector(0, 0, 1)
+              ).setMag(random(3, 5));
     
     birds[i] = new Bird(x, y,
                         vel.x, vel.y, 1,
                         color(0, 100+randColor, 255-randColor))
-  }
-  
-  for (let i = 0; i < nWhales; i++) {
-    let randColor = random(0, 120);
-    birds[i+nBirds] = new Bird(random(0, width), random(0, height),
-                               random(-3, 3), random(-3, 3),
-                               5,
-                               color(240, randColor, randColor));
   }
   
   background(0);
@@ -44,7 +38,7 @@ function setup() {
 function draw() {
   background(0);
   
-  for (let i = 0; i < nBirds+nWhales; i++) {
+  for (let i = 0; i < nBirds; i++) {
     
     // get localbirbs and their average location
     let localBirds = [];
@@ -52,8 +46,7 @@ function draw() {
     for (let j = 0; j < nBirds; j++) {
       if (i != j && birds[i].pos.dist(birds[j].pos) < 50) {
         localBirds.push(birds[j]);
-        vCenter.add(birds[j].pos);
-        vCenter.div(2);
+        vCenter.add(birds[j].pos).div(2);
       }
     }
     

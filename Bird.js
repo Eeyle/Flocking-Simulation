@@ -13,7 +13,7 @@ class Bird {
     this.pos.add(this.vel);
     this.acc.mult(0);
     
-    this.vel.mult(1-0.01*this.mass);
+    this.vel.mult(1-0.01*this.mass); // velocities slowly decay to offset extra forces from flocking
     
     if (this.pos.x < 0) {
       this.pos = createVector(width, this.pos.y);
@@ -34,28 +34,29 @@ class Bird {
   }
   
   separate(birds) {
-    for (let bird of birds) {
-      let diff = p5.Vector.sub(this.pos, bird.pos);
-      if (diff.mag() != 0) { diff.div(diff.mag()); }
-      diff.mult(separationSlider.value()*this.mass);
-      this.acc.add(diff);
+    for (let bird of birds) {    
+      this.acc.add(
+        p5.Vector.sub(this.pos, bird.pos)
+        .normalize()
+        .mult(separationSlider.value()*this.mass)
+      );
     }
   }
   
   align(birds) {
     for (let bird of birds) {
-      let angleDiff = this.vel.angleBetween(bird.vel);
-      let v1 = createVector(this.vel.x, this.vel.y, 0);
-      let v2 = createVector(bird.vel.x, bird.vel.y, 0);
-      let v3 = v1.cross(v2);
-      if (v3.z < 0) { angleDiff *= -1; }
-      this.vel.rotate(alignmentSlider.value()*angleDiff);
+      this.vel.rotate(
+        alignmentSlider.value() * 
+        this.vel.angleBetween(bird.vel) *
+        ((createVector(this.vel.x, this.vel.y, 0)
+          .cross(createVector(bird.vel.x, bird.vel.y, 0)).z < 0) 
+          ? -1 : 1) // cross product negative -> left handed turn
+      );
     }
   }
   
   cohere(vCenter) {
-    let diff = p5.Vector.sub(this.pos, vCenter);
-    diff.mult(-coherenceSlider.value()/this.mass);
-    this.acc.add(diff);
+    this.acc.add(p5.Vector.sub(this.pos, vCenter)
+                 .mult(-coherenceSlider.value()/this.mass));
   }
 }
